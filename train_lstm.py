@@ -19,7 +19,7 @@ import csv
 import datetime
 
 
-def save_results(results, folds2Test, use_pca, startTimeStamp, hparam_hist, session_num=1):
+def save_results(results, folds2Test, use_pca, startTimeStamp, hparam_hist, session_num=1, softness=False):
     hist = {'loss': [],
             'accuracy': [],
             'f1_score': [],
@@ -35,7 +35,7 @@ def save_results(results, folds2Test, use_pca, startTimeStamp, hparam_hist, sess
         hist[metric].append([])
 
     for m in ['loss', 'accuracy', 'f1_score']:
-        name = f"train_hist_{m}_PCA{use_pca}_LSTM_" + startTimeStamp
+        name = f"train_hist_{m}_PCA{use_pca}_LSTM_soft{softness}_" + startTimeStamp
         with open(f'{name}.csv', 'a') as out:
             for row in hist[m]:
                 for col in row:
@@ -47,12 +47,12 @@ def save_results(results, folds2Test, use_pca, startTimeStamp, hparam_hist, sess
                     out.write('{0},'.format(col))
                 out.write('\n')
 
-    name = f"trial_details_PCA{use_pca}_LSTM_" + startTimeStamp
+    name = f"trial_details_PCA{use_pca}_LSTM_soft{softness}_" + startTimeStamp
     with open(f'{name}.csv', 'a') as out:
         write = csv.writer(out)
         write.writerows(hparam_hist)
     
-    name = f"lr_details_PCA{use_pca}_LSTM_" + startTimeStamp
+    name = f"lr_details_PCA{use_pca}_LSTM_soft{softness}_" + startTimeStamp
     with open(f'{name}.csv', 'a') as out:
         write = csv.writer(out)
         write.writerows(results['lr_hist'])

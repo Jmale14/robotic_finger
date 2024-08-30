@@ -217,7 +217,7 @@ softness = np.array(labels[:, 1]).reshape(-1, 1)
 encoded_softness = softness_encoder.fit_transform(softness)
 
 labels_encoder = OneHotEncoder(sparse=False)
-labels = np.array(labels[:, 0]).reshape(-1, 1)
+labels = np.array(labels[:, 0].astype(np.int)).reshape(-1, 1)
 encoded_labels = labels_encoder.fit_transform(labels)
 
 # Save normalized folds and scalers

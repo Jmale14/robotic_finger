@@ -5,11 +5,17 @@ import itertools
 import pandas as pd
 import seaborn as sn
 
-def plot_confusion_matrix(all_y_true, all_y_pred):
-    # Compute confusion matrix
-    conf_matrix = confusion_matrix(all_y_true, all_y_pred)
+def plot_confusion_matrix(all_y_true, all_y_pred, categories=None):
+    classes = np.unique(all_y_true)
+    num_classes = len(classes)
 
-    conf_mat_perc = confusion_matrix(all_y_true, all_y_pred, normalize='true', labels=range(18))
+    # Compute confusion matrix
+    #if categories is not None:
+    #    conf_matrix = confusion_matrix(all_y_true, all_y_pred, labels=categories)
+    #    conf_mat_perc = confusion_matrix(all_y_true, all_y_pred, normalize='true', labels=categories)
+    #else:
+    conf_matrix = confusion_matrix(all_y_true, all_y_pred)
+    conf_mat_perc = confusion_matrix(all_y_true, all_y_pred, normalize='true', labels=range(num_classes))
     conf_mat_perc = conf_mat_perc*100
 
     
@@ -38,8 +44,11 @@ def plot_confusion_matrix(all_y_true, all_y_pred):
 
 
     #LABELS = actions  # [i for i in range(num_actions)]
-    df_cm = pd.DataFrame(conf_mat_perc)#, index=LABELS,
-                            #columns=LABELS)
+    if categories is not None:
+        df_cm = pd.DataFrame(conf_mat_perc, index=categories,
+                            columns=categories)
+    else:
+        df_cm = pd.DataFrame(conf_mat_perc)
 
     group_counts = ["{0:0.0f}".format(value) for value in
                     conf_matrix.flatten()]
@@ -49,7 +58,7 @@ def plot_confusion_matrix(all_y_true, all_y_pred):
     labels = [f"{v1}\n{v2}" for v1, v2 in
                 zip(group_counts, group_percentages)]
 
-    labels = np.asarray(labels).reshape(18, 18)
+    labels = np.asarray(labels).reshape(num_classes, num_classes)
     plt.figure()
     ax = sn.heatmap(df_cm, annot=labels, fmt='', cmap='Blues', square=True, vmin=0, vmax=100, cbar_kws={'label': 'Accuracy, %'})
     ax.xaxis.tick_top() # x axis on top

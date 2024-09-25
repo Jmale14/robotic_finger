@@ -132,12 +132,13 @@ def run_trial(hparams, folds, use_pca, verbose=0):
             #         optimizer = self.model.optimizer
             #         lr_hist.append(K.eval(optimizer.lr))
             # savelr = savelearningrate()
-            
+            print(f"Input train data shape: {train_windows.shape}")
             history = model.fit(train_windows, train_labels_encoded, epochs=hparams["HP_EPOCHS"], batch_size=hparams["HP_BATCH"], validation_data=(test_windows, test_labels_encoded), shuffle=True, verbose=verbose)
             
             #print(lr_hist)
 
             # Evaluate on Test data
+            print(f"Input test data shape: {test_windows.shape}")
             test_loss, test_accuracy, test_prec, test_rec, test_f1_int = model.evaluate(test_windows, test_labels_encoded, verbose=0)
             y_test_pred = model.predict(test_windows)
             y_test_true = np.argmax(test_labels_encoded, axis=1)
@@ -183,7 +184,7 @@ if __name__ == "__main__":
                 "HP_FILTERS": 100,
                 "HP_KERNEL": 3,
                 "HP_POOL": 5,
-                "HP_EPOCHS": 200,
+                "HP_EPOCHS": 150,
                 "HP_BATCH": 64,
                 "HP_LR": 0.001,
                 "HP_L2_LAMBDA": 0.001,

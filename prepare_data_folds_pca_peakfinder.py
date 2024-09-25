@@ -35,12 +35,12 @@ def trim_to_peaks(data):
     start_idx = max(peaks[0]-sampling_freq, 0)
     end_idx = min(peaks[-1]+sampling_freq, data.shape[0])
 
-    plt.plot(pressure_data)
-    plt.plot(peaks, pressure_data[peaks], "x")
-    plt.axvline(x = start_idx, color = 'b')
-    plt.axvline(x = end_idx, color = 'b')
-    #plt.ylim((-200, 200))
-    plt.show()
+    # plt.plot(pressure_data)
+    # plt.plot(peaks, pressure_data[peaks], "x")
+    # plt.axvline(x = start_idx, color = 'b')
+    # plt.axvline(x = end_idx, color = 'b')
+    # #plt.ylim((-200, 200))
+    # plt.show()
 
     return data[start_idx:end_idx]
 
@@ -137,7 +137,7 @@ def plot_pca(pcas):
 
 
 # Specify the directory containing your CSV files
-directory = ['collected_data_previous', 'collected_data']
+directory = ['collected_data']#_previous', 'collected_data']
 data = load_csv_files(directory)
 
 # Define the window size
@@ -164,7 +164,7 @@ for train_windows, train_labels, test_windows, test_labels in folds:
 plot_pca(pcas)
 
 # One-hot encode labels
-encoder = OneHotEncoder(sparse=False)
+encoder = OneHotEncoder(sparse_output=False)
 labels = np.array(labels).reshape(-1, 1)
 encoded_labels = encoder.fit_transform(labels)
 

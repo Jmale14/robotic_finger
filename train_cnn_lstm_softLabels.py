@@ -120,8 +120,8 @@ def run_trial(hparams, folds, use_pca, verbose=0):
 
             # train_windows = np.array(train_windows)
             test_windows = np.array(test_windows)
-            train_labels_encoded = encoder.transform(shuffled_labels.reshape(-1, 1).astype(np.int))
-            test_labels_encoded = encoder.transform(np.array(test_labels).reshape(-1, 1).astype(np.int))
+            train_labels_encoded = encoder.transform(shuffled_labels.reshape(-1, 1).astype(int))
+            test_labels_encoded = encoder.transform(np.array(test_labels).reshape(-1, 1).astype(int))
             window_size = train_windows[0].shape
             model = create_cnnlstm_model(window_size, num_classes, hparams)
 
@@ -191,7 +191,7 @@ if __name__ == "__main__":
                 "HP_L2_LAMBDA": 0.001,
                 "HP_LSTM_UNITS": 64 }
 
-    folds2Test = 5
+    folds2Test = 1#5
     use_pca = True
     results = run_trial(hparams, folds2Test, use_pca, verbose=1)
 

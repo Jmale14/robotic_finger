@@ -22,15 +22,10 @@ import datetime
 def load_data(use_pca=False):
     # To load normalized folds and scalers
     if use_pca:
-        normalized_folds = joblib.load('normalized_folds_pca_allData_peakTrim_softness.pkl')
-        scalers = joblib.load('scalers_pca_allData_peakTrim_softness.pkl')
-        encoded_labels = joblib.load('encoded_labels_pca_allData_peakTrim_softness.pkl')
-        encoder = joblib.load('labelsencoder_pca_allData_peakTrim_softness.pkl')
-    else:
-        normalized_folds = joblib.load('normalized_folds_allData_peakTrim_softness.pkl')
-        scalers = joblib.load('scalers_allData_peakTrim_softness.pkl')
-        encoded_labels = joblib.load('encoded_labels_allData_peakTrim_softness.pkl')
-        encoder = joblib.load('labelsencoder_allData_peakTrim_softness.pkl')
+        normalized_folds = joblib.load('normalized_folds_pca_allData_peakTrim_text&soft.pkl')
+        scalers = joblib.load('scalers_pca_allData_peakTrim_text&soft.pkl')
+        encoded_labels = joblib.load('encoded_labels_pca_allData_peakTrim_text&soft.pkl')
+        encoder = joblib.load('labelsencoder_pca_allData_peakTrim_text&soft.pkl')
 
     #plot_example_data(normalized_folds)
 
@@ -134,12 +129,13 @@ def run_trial(hparams, folds, use_pca, verbose=0):
             #         optimizer = self.model.optimizer
             #         lr_hist.append(K.eval(optimizer.lr))
             # savelr = savelearningrate()
-            
+            print(f"Input train data shape: {train_windows.shape}")
             history = model.fit(train_windows, train_labels_encoded, epochs=hparams["HP_EPOCHS"], batch_size=hparams["HP_BATCH"], validation_data=(test_windows, test_labels_encoded), shuffle=True, verbose=verbose)
             
             #print(lr_hist)
 
             # Evaluate on Test data
+            print(f"Input test data shape: {test_windows.shape}")
             test_loss, test_accuracy, test_prec, test_rec, test_f1_int = model.evaluate(test_windows, test_labels_encoded, verbose=0)
             y_test_pred = model.predict(test_windows)
             y_test_true = np.argmax(test_labels_encoded, axis=1)
@@ -176,7 +172,7 @@ def run_trial(hparams, folds, use_pca, verbose=0):
                "hist" : fold_histories,
                "lr_hist" : lr_histories}
 
-    return results
+    return results, encoder.categories_
 
 
 
@@ -185,20 +181,17 @@ if __name__ == "__main__":
                 "HP_FILTERS": 100,
                 "HP_KERNEL": 3,
                 "HP_POOL": 5,
-                "HP_EPOCHS": 200,
+                "HP_EPOCHS": 65,
                 "HP_BATCH": 64,
                 "HP_LR": 0.001,
                 "HP_L2_LAMBDA": 0.001,
                 "HP_LSTM_UNITS": 64 }
 
-    folds2Test = 1#5
+    folds2Test = 5
     use_pca = True
-    results = run_trial(hparams, folds2Test, use_pca, verbose=1)
+    results, categories = run_trial(hparams, folds2Test, use_pca, verbose=1)
 
-    # Plot confusion matrix
-    #for f in range(len(results["yTrue"])):
-    #    plot_confusion_matrix(results["yTrue"][f], results["yPred"][f])
-    plot_confusion_matrix([x for xs in results["yTrue"] for x in xs], [x for xs in results["yPred"] for x in xs])
+    plot_confusion_matrix([x for xs in results["yTrue"] for x in xs], [x for xs in results["yPred"] for x in xs], categories)
 
     # Plot average training history across folds
     plot_training_results(results["hist"])

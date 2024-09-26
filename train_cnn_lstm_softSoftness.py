@@ -61,17 +61,12 @@ def save_results(results, folds2Test, use_pca, startTimeStamp, hparam_hist, sess
 def load_data(use_pca=False):
     # To load normalized folds and scalers
     if use_pca:
-        normalized_folds = joblib.load('normalized_folds_pca_allData_peakTrim_softness.pkl')
-        scalers = joblib.load('scalers_pca_allData_peakTrim_softness.pkl')
-        encoded_softness = joblib.load('encoded_softness_pca_allData_peakTrim_softness.pkl')
-        encoder = joblib.load('softnessencoder_pca_allData_peakTrim_softness.pkl')
-    else:
-        normalized_folds = joblib.load('normalized_folds_allData_peakTrim_softness.pkl')
-        scalers = joblib.load('scalers_allData_peakTrim_softness.pkl')
-        encoded_softness = joblib.load('encoded_softness_allData_peakTrim_softness.pkl')
-        encoder = joblib.load('softnesssencoder_allData_peakTrim_softness.pkl')
+        normalized_folds = joblib.load('normalized_folds_pca_allData_peakTrim_text&soft.pkl')
+        scalers = joblib.load('scalers_pca_allData_peakTrim_text&soft.pkl')
+        encoded_softness = joblib.load('encoded_softness_pca_allData_peakTrim_text&soft.pkl')
+        encoder = joblib.load('softnessencoder_pca_allData_peakTrim_text&soft.pkl')
 
-    #plot_example_data(normalized_folds)
+    # plot_example_data(normalized_folds)
 
     # Define window size and number of classes
     window_size = normalized_folds[0][0][0].shape[0]  # Assuming all windows have the same size
@@ -224,7 +219,7 @@ if __name__ == "__main__":
                 "HP_FILTERS": 100,
                 "HP_KERNEL": 3,
                 "HP_POOL": 5,
-                "HP_EPOCHS": 80,
+                "HP_EPOCHS": 70,
                 "HP_BATCH": 64,
                 "HP_LR": 0.001,
                 "HP_L2_LAMBDA": 0.001,

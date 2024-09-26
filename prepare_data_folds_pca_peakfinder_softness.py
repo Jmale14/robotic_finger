@@ -185,7 +185,7 @@ def plot_pca(pcas):
 
 
 # Specify the directory containing your CSV files
-directory = ['softness_data']#'collected_data_previous', 'collected_data', 'softness_data', 'softness&texture']
+directory = ['softness&texture']#'collected_data_previous', 'collected_data', 'softness_data', 'softness&texture']
 data = load_csv_files(directory)
 
 # Define the window size
@@ -221,13 +221,13 @@ labels = np.array(labels[:, 0].astype(int)).reshape(-1, 1)
 encoded_labels = labels_encoder.fit_transform(labels)
 
 # Save normalized folds and scalers
-joblib.dump(normalized_folds, 'normalized_folds_pca_allData_peakTrim_justsoftness.pkl')
-joblib.dump(scalers, 'scalers_pca_allData_peakTrim_justsoftness.pkl')
-joblib.dump(encoded_labels, 'encoded_labels_pca_allData_peakTrim_justsoftness.pkl')
-joblib.dump(labels_encoder, 'labelsencoder_pca_allData_peakTrim_justsoftness.pkl')
-joblib.dump(encoded_softness, 'encoded_softness_pca_allData_peakTrim_justsoftness.pkl')
-joblib.dump(softness_encoder, 'softnessencoder_pca_allData_peakTrim_justsoftness.pkl')
-joblib.dump(pcas, 'pcas_pca_allData_peakTrim_justsoftness.pkl')
+joblib.dump(normalized_folds, 'normalized_folds_pca_allData_peakTrim_text&soft.pkl')
+joblib.dump(scalers, 'scalers_pca_allData_peakTrim_text&soft.pkl')
+joblib.dump(encoded_labels, 'encoded_labels_pca_allData_peakTrim_text&soft.pkl')
+joblib.dump(labels_encoder, 'labelsencoder_pca_allData_peakTrim_text&soft.pkl')
+joblib.dump(encoded_softness, 'encoded_softness_pca_allData_peakTrim_text&soft.pkl')
+joblib.dump(softness_encoder, 'softnessencoder_pca_allData_peakTrim_text&soft.pkl')
+joblib.dump(pcas, 'pcas_pca_allData_peakTrim_text&soft.pkl')
 
 # Now normalized_folds contains the training and validation sets for each fold
 

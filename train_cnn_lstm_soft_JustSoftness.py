@@ -19,7 +19,7 @@ import datetime
 import csv
 
 
-def save_results(results, folds2Test, use_pca, startTimeStamp, hparam_hist, session_num=1):
+def save_results(results, folds2Test, use_pca, startTimeStamp, hparam_hist, session_num=1, final_model_training=False):
     hist = {'loss': [],
             'accuracy': [],
             'f1_score': [],
@@ -35,7 +35,7 @@ def save_results(results, folds2Test, use_pca, startTimeStamp, hparam_hist, sess
         hist[metric].append([])
 
     for m in ['loss', 'accuracy', 'f1_score']:
-        name = f"SOFTNESStrain_hist_{m}_PCA{use_pca}_LSTM_" + startTimeStamp
+        name = f"SOFTNESStrain_hist_{m}_PCA{use_pca}_LSTM_ModelTrain{final_model_training}_" + startTimeStamp
         with open(f'{name}.csv', 'a') as out:
             for row in hist[m]:
                 for col in row:
@@ -47,35 +47,40 @@ def save_results(results, folds2Test, use_pca, startTimeStamp, hparam_hist, sess
                     out.write('{0},'.format(col))
                 out.write('\n')
 
-    name = f"SOFTNESStrial_details_PCA{use_pca}_LSTM_" + startTimeStamp
+    name = f"SOFTNESStrial_details_PCA{use_pca}_LSTM_ModelTrain{final_model_training}_" + startTimeStamp
     with open(f'{name}.csv', 'a') as out:
         write = csv.writer(out)
         write.writerows(hparam_hist)
     
-    name = f"SOFTNESSlr_details_PCA{use_pca}_LSTM_" + startTimeStamp
+    name = f"SOFTNESSlr_details_PCA{use_pca}_LSTM_ModelTrain{final_model_training}_" + startTimeStamp
     with open(f'{name}.csv', 'a') as out:
         write = csv.writer(out)
         write.writerows(results['lr_hist'])
 
 
-def load_data(use_pca=False):
+def load_data(use_pca=False, final_model_training=False):
     # To load normalized folds and scalers
-    if use_pca:
-        normalized_folds = joblib.load('normalized_folds_pca_allData_peakTrim_justsoftness.pkl')
-        scalers = joblib.load('scalers_pca_allData_peakTrim_justsoftness.pkl')
-        encoded_softness = joblib.load('encoded_softness_pca_allData_peakTrim_justsoftness.pkl')
-        encoder = joblib.load('softnessencoder_pca_allData_peakTrim_justsoftness.pkl')
+    if final_model_training:
+        normalized_folds = [joblib.load('normalized_data_Softness_Train_Test.pkl')]
+        scalers = joblib.load('scalers_pca__Softness_Train_Test.pkl')
+        encoder = joblib.load('softnessencoder__Softness_Train_Test.pkl')
     else:
-        normalized_folds = joblib.load('normalized_folds_allData_peakTrim_justsoftness.pkl')
-        scalers = joblib.load('scalers_allData_peakTrim_justsoftness.pkl')
-        encoded_softness = joblib.load('encoded_softness_allData_peakTrim_justsoftness.pkl')
-        encoder = joblib.load('softnesssencoder_allData_peakTrim_justsoftness.pkl')
+        if use_pca:
+            normalized_folds = joblib.load('normalized_folds_pca_allData_peakTrim_justsoftness.pkl')
+            scalers = joblib.load('scalers_pca_allData_peakTrim_justsoftness.pkl')
+            encoded_softness = joblib.load('encoded_softness_pca_allData_peakTrim_justsoftness.pkl')
+            encoder = joblib.load('softnessencoder_pca_allData_peakTrim_justsoftness.pkl')
+        else:
+            normalized_folds = joblib.load('normalized_folds_allData_peakTrim_justsoftness.pkl')
+            scalers = joblib.load('scalers_allData_peakTrim_justsoftness.pkl')
+            encoded_softness = joblib.load('encoded_softness_allData_peakTrim_justsoftness.pkl')
+            encoder = joblib.load('softnesssencoder_allData_peakTrim_justsoftness.pkl')
 
     #plot_example_data(normalized_folds)
 
     # Define window size and number of classes
     window_size = normalized_folds[0][0][0].shape[0]  # Assuming all windows have the same size
-    num_classes = encoded_softness.shape[1]
+    num_classes = 4#encoded_softness.shape[1]
 
     return normalized_folds, window_size, num_classes, encoder
 
@@ -128,7 +133,7 @@ def create_cnnlstm_model(input_size, num_classes, hparams):
     return model
 
 
-def run_trial(hparams, folds, use_pca, verbose=0):
+def run_trial(hparams, folds, use_pca, verbose=0, final_model_training=False):
     # Lists to store results
     lr_histories = []
     accuracy_scores = []
@@ -140,13 +145,21 @@ def run_trial(hparams, folds, use_pca, verbose=0):
     all_y_true = []
     all_y_pred = []
 
-    normalized_folds, window_size, num_classes, encoder = load_data(use_pca)
+    normalized_folds, window_size, num_classes, encoder = load_data(use_pca, final_model_training)
     time_div_folds = time_divide_data(normalized_folds)
+
+    # if final_model_training:
+    #     new_data = [[],[]]
+    #     for fold in time_div_folds:
+    #         new_data[0].extend(fold[0])
+    #         new_data[1].extend(fold[1])
+    #     time_div_folds = [(np.array(new_data[0]), np.array(new_data[1]), [], [])]
 
     # Train the model on each fold
     for i, (train_windows, train_labels, test_windows, test_labels) in enumerate(time_div_folds):
         train_labels = train_labels[:, 1]
-        test_labels = test_labels[:, 1]
+        if not final_model_training:
+            test_labels = test_labels[:, 1]
         if i >= folds:
             break
         else:
@@ -160,8 +173,9 @@ def run_trial(hparams, folds, use_pca, verbose=0):
             # train_windows = np.array(train_windows)
             test_windows = np.array(test_windows)
             train_labels_encoded = encoder.transform(shuffled_labels.reshape(-1, 1))
-            test_labels_encoded = encoder.transform(np.array(test_labels).reshape(-1, 1))
             window_size = train_windows[0].shape
+            if not final_model_training:
+                test_labels_encoded = encoder.transform(np.array(test_labels).reshape(-1, 1))
             model = create_cnnlstm_model(window_size, num_classes, hparams)
 
             # reduce_lr = ReduceLROnPlateau(monitor='val_f1_score', verbose=1, mode='max', factor=0.8)
@@ -174,38 +188,44 @@ def run_trial(hparams, folds, use_pca, verbose=0):
             #         lr_hist.append(K.eval(optimizer.lr))
             # savelr = savelearningrate()
             print(f"Input train data shape: {train_windows.shape}")
-            history = model.fit(train_windows, train_labels_encoded, epochs=hparams["HP_EPOCHS"], batch_size=hparams["HP_BATCH"], validation_data=(test_windows, test_labels_encoded), shuffle=True, verbose=verbose)
-            
+            if final_model_training:
+                history = model.fit(train_windows, train_labels_encoded, epochs=hparams["HP_EPOCHS"], batch_size=hparams["HP_BATCH"], validation_split=0.2, shuffle=True, verbose=verbose)
+                model.save("SoftnessModel.keras")
+            else:
+                history = model.fit(train_windows, train_labels_encoded, epochs=hparams["HP_EPOCHS"], batch_size=hparams["HP_BATCH"], validation_data=(test_windows, test_labels_encoded), shuffle=True, verbose=verbose)
             #print(lr_hist)
 
             # Evaluate on Test data
-            print(f"Input test data shape: {test_windows.shape}")
-            test_loss, test_accuracy, test_prec, test_rec, test_f1_int = model.evaluate(test_windows, test_labels_encoded, verbose=0)
-            y_test_pred = model.predict(test_windows)
-            y_test_true = np.argmax(test_labels_encoded, axis=1)
-            y_test_pred = np.argmax(y_test_pred, axis=1)
+            if not final_model_training:
+                print(f"Input test data shape: {test_windows.shape}")
+                test_loss, test_accuracy, test_prec, test_rec, test_f1_int = model.evaluate(test_windows, test_labels_encoded, verbose=0)
+                y_test_pred = model.predict(test_windows)
+                y_test_true = np.argmax(test_labels_encoded, axis=1)
+                y_test_pred = np.argmax(y_test_pred, axis=1)
 
-            # Accumulate predictions and true labels for confusion matrix
-            all_y_true.append(y_test_true)
-            all_y_pred.append(y_test_pred)
+                # Accumulate predictions and true labels for confusion matrix
+                all_y_true.append(y_test_true)
+                all_y_pred.append(y_test_pred)
 
-            # Calculate F1 score for test
-            f1 = f1_score(y_test_true, y_test_pred, average='macro')
+                # Calculate F1 score for test
+                f1 = f1_score(y_test_true, y_test_pred, average='macro')
 
-            accuracy_scores.append(test_accuracy)
-            rec_scores.append(test_rec)
-            prec_scores.append(test_prec)
-            f1_scores.append(f1)
-            f1_int_scores.append(test_f1_int)
+            if not final_model_training:
+                accuracy_scores.append(test_accuracy)
+                rec_scores.append(test_rec)
+                prec_scores.append(test_prec)
+                f1_scores.append(f1)
+                f1_int_scores.append(test_f1_int)
             fold_histories.append(history)
             lr_histories.append(lr_hist)
 
     # Print results
-    print(f"Test Accuracy: {np.mean(accuracy_scores):.4f} ± {np.std(accuracy_scores):.4f}")
-    print(f"Test F1 Score: {np.mean(f1_scores):.4f} ± {np.std(f1_scores):.4f}")
-    print(f"Test F1 Internal Score: {np.mean(f1_int_scores):.4f} ± {np.std(f1_int_scores):.4f}")
-    print(f"Test Precision: {np.mean(prec_scores):.4f} ± {np.std(prec_scores):.4f}")
-    print(f"Test Recall: {np.mean(rec_scores):.4f} ± {np.std(rec_scores):.4f}")
+    if not final_model_training:
+        print(f"Test Accuracy: {np.mean(accuracy_scores):.4f} ± {np.std(accuracy_scores):.4f}")
+        print(f"Test F1 Score: {np.mean(f1_scores):.4f} ± {np.std(f1_scores):.4f}")
+        print(f"Test F1 Internal Score: {np.mean(f1_int_scores):.4f} ± {np.std(f1_int_scores):.4f}")
+        print(f"Test Precision: {np.mean(prec_scores):.4f} ± {np.std(prec_scores):.4f}")
+        print(f"Test Recall: {np.mean(rec_scores):.4f} ± {np.std(rec_scores):.4f}")
 
     results = {"acc"  : np.mean(accuracy_scores),
                "f1"   : np.mean(f1_scores), 
@@ -225,7 +245,7 @@ if __name__ == "__main__":
                 "HP_FILTERS": 100,
                 "HP_KERNEL": 3,
                 "HP_POOL": 5,
-                "HP_EPOCHS": 60,
+                "HP_EPOCHS": 20,
                 "HP_BATCH": 64,
                 "HP_LR": 0.001,
                 "HP_L2_LAMBDA": 0.001,
@@ -233,12 +253,16 @@ if __name__ == "__main__":
 
     folds2Test = 5
     use_pca = True
-    results, categories = run_trial(hparams, folds2Test, use_pca, verbose=1)
+    final_model_training = True
+    if final_model_training:
+        folds2Test = 1
+    results, categories = run_trial(hparams, folds2Test, use_pca, verbose=1, final_model_training=final_model_training)
 
     # Plot confusion matrix
     #for f in range(len(results["yTrue"])):
     #    plot_confusion_matrix(results["yTrue"][f], results["yPred"][f])
-    plot_confusion_matrix([x for xs in results["yTrue"] for x in xs], [x for xs in results["yPred"] for x in xs], categories)
+    if not final_model_training:
+        plot_confusion_matrix([x for xs in results["yTrue"] for x in xs], [x for xs in results["yPred"] for x in xs], categories)
 
     # Plot average training history across folds
     plot_training_results(results["hist"])

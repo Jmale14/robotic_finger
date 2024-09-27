@@ -191,7 +191,7 @@ if __name__ == "__main__":
     use_pca = True
     results, categories = run_trial(hparams, folds2Test, use_pca, verbose=1)
 
-    plot_confusion_matrix([x for xs in results["yTrue"] for x in xs], [x for xs in results["yPred"] for x in xs], categories)
+    plot_confusion_matrix([x for xs in results["yTrue"] for x in xs], [x for xs in results["yPred"] for x in xs], [c+1 for c in categories])
 
     # Plot average training history across folds
     plot_training_results(results["hist"])

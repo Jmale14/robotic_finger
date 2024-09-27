@@ -197,7 +197,7 @@ if __name__ == "__main__":
     # Plot confusion matrix
     #for f in range(len(results["yTrue"])):
     #    plot_confusion_matrix(results["yTrue"][f], results["yPred"][f])
-    plot_confusion_matrix([x for xs in results["yTrue"] for x in xs], [x for xs in results["yPred"] for x in xs])
+    plot_confusion_matrix([x for xs in results["yTrue"] for x in xs], [x for xs in results["yPred"] for x in xs], [i for i in range(1, 19)])
 
     # Plot average training history across folds
     plot_training_results(results["hist"])

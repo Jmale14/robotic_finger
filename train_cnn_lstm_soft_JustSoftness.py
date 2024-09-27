@@ -253,7 +253,7 @@ if __name__ == "__main__":
 
     folds2Test = 5
     use_pca = True
-    final_model_training = True
+    final_model_training = False
     if final_model_training:
         folds2Test = 1
     results, categories = run_trial(hparams, folds2Test, use_pca, verbose=1, final_model_training=final_model_training)

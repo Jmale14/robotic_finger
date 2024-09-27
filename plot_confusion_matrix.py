@@ -16,7 +16,7 @@ def plot_confusion_matrix(all_y_true, all_y_pred, categories=None):
     #else:
     conf_matrix = confusion_matrix(all_y_true, all_y_pred)
     conf_mat_perc = confusion_matrix(all_y_true, all_y_pred, normalize='true', labels=range(num_classes))
-    conf_mat_perc = conf_mat_perc*100
+    # conf_mat_perc = conf_mat_perc*100
 
     
     # Plot confusion matrix
@@ -52,7 +52,7 @@ def plot_confusion_matrix(all_y_true, all_y_pred, categories=None):
 
     group_counts = ["{0:0.0f}".format(value) for value in
                     conf_matrix.flatten()]
-    group_percentages = ["{0:.1f}".format(value/100) for value in
+    group_percentages = ["{0:.2f}".format(value) for value in
                             conf_mat_perc.flatten()]
 
     labels = [f"{v1}\n{v2}" for v1, v2 in
@@ -60,7 +60,7 @@ def plot_confusion_matrix(all_y_true, all_y_pred, categories=None):
 
     labels = np.asarray(labels).reshape(num_classes, num_classes)
     plt.figure()
-    ax = sn.heatmap(df_cm, annot=labels, fmt='', cmap='Blues', square=True, vmin=0, vmax=100, cbar_kws={'label': 'Accuracy, %'})
+    ax = sn.heatmap(df_cm, annot=labels, fmt='', cmap='Blues', square=True, vmin=0, vmax=1, cbar_kws={'label': 'Accuracy'})
     ax.xaxis.tick_top() # x axis on top
     ax.xaxis.set_label_position('top')
     ax.tick_params(length=0)
